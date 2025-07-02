@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Romantismo Brasileiro</title>
+    <!-- Inclui a biblioteca Tailwind CSS para estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos personalizados para o corpo da página */
+        body {
+            font-family: "Inter", sans-serif; /* Define a fonte principal */
+            background-color: #f0f4f8; /* Cor de fundo suave */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Garante que o corpo ocupe toda a altura da viewport */
+            margin: 0;
+            padding: 20px; /* Adiciona um preenchimento para telas menores */
+            box-sizing: border-box; /* Inclui padding e borda na largura total */
+        }
+        /* Estilos para o contêiner principal do quiz */
+        .quiz-container {
+            background-color: #ffffff; /* Fundo branco */
+            padding: 30px;
+            border-radius: 15px; /* Cantos arredondados */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Sombra para profundidade */
+            max-width: 600px; /* Largura máxima do contêiner */
+            width: 100%; /* Ocupa toda a largura disponível */
+            text-align: center;
+        }
+        /* Estilos para o título das gerações */
+        .generation-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #334155;
+            margin-bottom: 20px;
+        }
+        /* Estilos para a pergunta */
+        .question-text {
+            font-size: 1.25rem;
+            color: #1e293b;
+            margin-bottom: 25px;
+            min-height: 80px; /* Altura mínima para evitar layout shifts */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        /* Estilos para o grupo de botões de resposta */
+        .answer-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Espaçamento entre os botões */
+        }
+        /* Estilos para os botões de resposta */
+        .answer-button {
+            background-color: #e2e8f0; /* Cor de fundo padrão */
+            color: #475569; /* Cor do texto */
+            padding: 15px 20px;
+            border-radius: 10px; /* Cantos arredondados */
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease; /* Transição suave para hover e click */
+            border: 2px solid transparent; /* Borda transparente padrão */
+        }
+        /* Efeito de hover para os botões de resposta */
+        .answer-button:hover {
+            background-color: #cbd5e1; /* Cor de fundo no hover */
+            transform: translateY(-2px); /* Pequeno movimento para cima */
+        }
+        /* Estilos para feedback de resposta correta */
+        .answer-button.correct {
+            background-color: #d1fae5; /* Fundo verde claro */
+            color: #065f46; /* Texto verde escuro */
+            border-color: #34d399; /* Borda verde */
+        }
+        /* Estilos para feedback de resposta incorreta */
+        .answer-button.incorrect {
+            background-color: #fee2e2; /* Fundo vermelho claro */
+            color: #991b1b; /* Texto vermelho escuro */
+            border-color: #ef4444; /* Borda vermelha */
+        }
+        /* Estilos para botões desabilitados */
+        .answer-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        /* Estilos para o contêiner de feedback */
+        .feedback-container {
+            margin-top: 25px;
+            font-size: 1rem;
+            min-height: 60px; /* Altura mínima para feedback */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        /* Estilos para o texto de feedback */
+        .feedback-text {
+            font-weight: 500;
+        }
+        /* Estilos para o botão "Próxima Pergunta" */
+        .next-button {
+            background-color: #3b82f6; /* Cor azul */
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin-top: 20px;
+        }
+        /* Efeito de hover para o botão "Próxima Pergunta" */
+        .next-button:hover {
+            background-color: #2563eb; /* Azul mais escuro no hover */
+            transform: translateY(-2px);
+        }
+        /* Estilos para a pontuação final */
+        .score-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e293b;
+            margin-top: 20px;
+        }
+        /* Estilos para o botão de reiniciar */
+        .restart-button {
+            background-color: #10b981; /* Cor verde */
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin-top: 20px;
+        }
+        /* Efeito de hover para o botão de reiniciar */
+        .restart-button:hover {
+            background-color: #059669; /* Verde mais escuro no hover */
+            transform: translateY(-2px);
+        }
+        /* Estilos para as dicas */
+        .hint-text {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        /* Estilos para o modal de mensagem */
+        .modal {
+            display: none; /* Escondido por padrão */
+            position: fixed; /* Posição fixa na tela */
+            z-index: 1000; /* Acima de outros elementos */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Fundo semi-transparente */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #94a3b8;
+        }
+
+        .close-button:hover {
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1 class="text-3xl font-extrabold text-blue-800 mb-6">Quiz Romantismo Brasileiro</h1>
+        <div id="generation-section">
+            <h2 id="generation-title" class="generation-title"></h2>
+        </div>
+        <div id="question-section" class="hidden">
+            <p id="question-text" class="question-text"></p>
+            <div id="answer-buttons" class="answer-buttons">
+                <!-- Botões de resposta serão inseridos aqui via JS -->
+            </div>
+            <p id="hint-text" class="hint-text"></p>
+            <div id="feedback-container" class="feedback-container">
+                <p id="feedback-text" class="feedback-text"></p>
+                <p id="rationale-text" class="text-sm text-gray-600"></p>
+            </div>
+            <button id="next-button" class="next-button mt-5 hidden">Próxima Pergunta</button>
+        </div>
+        <div id="result-section" class="hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Quiz Concluído!</h2>
+            <p id="final-score" class="score-display"></p>
+            <button id="restart-button" class="restart-button">Reiniciar Quiz</button>
+        </div>
+    </div>
+
+    <!-- Modal para mensagens -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <p id="modalMessage" class="text-lg font-semibold text-gray-800"></p>
+        </div>
+    </div>
+
+    <script>
+        // Array de objetos de perguntas, agrupadas por geração
+        const questions = {
+            "1ª Geração (Indianista/Nacionalista)": [
+                {
+                    question: "Qual é o tema principal da 1ª geração do Romantismo Brasileiro, também conhecida como Indianista ou Nacionalista?",
+                    answers: [
+                        { text: "Exaltação da natureza e do índio como símbolo nacional.", correct: true, rationale: "A 1ª geração romântica brasileira focou na construção de uma identidade nacional, exaltando a natureza exuberante e o índio como herói nacional." },
+                        { text: "Foco no 'mal do século' e pessimismo.", correct: false, rationale: "O 'mal do século' e o pessimismo são características da 2ª geração romântica, não da 1ª." },
+                        { text: "Crítica social e condenação da escravidão.", correct: false, rationale: "A crítica social e a condenação da escravidão são temas predominantes na 3ª geração romântica, conhecida como Condoreira." },
+                        { text: "Idealização do amor cortês e da mulher.", correct: false, rationale: "Embora o amor seja um tema romântico, a idealização específica do amor cortês e da mulher não é o tema principal definidor da 1ª geração." }
+                    ],
+                    hint: "Pense no período pós-independência do Brasil e na busca por uma identidade própria."
+                },
+                {
+                    question: "Quem é considerado o principal representante da 1ª geração romântica brasileira e autor de 'Iracema'?",
+                    answers: [
+                        { text: "José de Alencar", correct: true, rationale: "José de Alencar é o grande nome da 1ª geração romântica brasileira, conhecido por suas obras indianistas e regionalistas." },
+                        { text: "Álvares de Azevedo", correct: false, rationale: "Álvares de Azevedo é um dos principais poetas da 2ª geração romântica, marcada pelo ultrarromantismo." },
+                        { text: "Castro Alves", correct: false, rationale: "Castro Alves é o principal poeta da 3ª geração romântica, conhecido por sua poesia social e abolicionista." },
+                        { text: "Gonçalves Dias", correct: false, rationale: "Gonçalves Dias também é um importante poeta da 1ª geração, mas José de Alencar é mais frequentemente associado à representação máxima da prosa indianista." }
+                    ],
+                    hint: "Sua obra é fundamental para entender a idealização do índio e da natureza no Romantismo brasileiro."
+                },
+                {
+                    question: "Qual das seguintes características NÃO pertence à 1ª geração do Romantismo Brasileiro?",
+                    answers: [
+                        { text: "Nacionalismo e indianismo.", correct: false, rationale: "Nacionalismo e indianismo são características marcantes da 1ª geração romântica brasileira." },
+                        { text: "Idealização da mulher e da pátria.", correct: false, rationale: "A idealização da mulher e da pátria são traços presentes na 1ª geração, especialmente na poesia amorosa e ufanista." },
+                        { text: "Subjetivismo e individualismo.", correct: false, rationale: "Subjetivismo e individualismo são elementos inerentes ao Romantismo como um todo, incluindo a 1ª geração." },
+                        { text: "Exacerbação do pessimismo e da morte.", correct: true, rationale: "A exacerbação do pessimismo e da morte é uma característica predominante na 2ª geração (Ultrarromantismo), e não na 1ª." }
+                    ],
+                    hint: "Considere o tom geral e os temas mais sombrios que se manifestam em gerações posteriores."
+                },
+                {
+                    question: "A obra 'Canção do Exílio' de Gonçalves Dias, com seu forte sentimento de saudade da pátria, é um exemplo típico de qual geração romântica brasileira?",
+                    answers: [
+                        { text: "1ª Geração (Indianista/Nacionalista)", correct: true, rationale: "A 'Canção do Exílio' reflete o nacionalismo e a exaltação da pátria, temas centrais da 1ª geração romântica brasileira, à qual Gonçalves Dias pertence." },
+                        { text: "2ª Geração (Ultrarromântica/Mal do Século)", correct: false, rationale: "A 2ª geração foca mais no pessimismo e na morbidez, e não na exaltação nacionalista como tema principal." },
+                        { text: "3ª Geração (Condoreira/Social)", correct: false, rationale: "A 3ª geração tem como foco a poesia social e abolicionista, distanciando-se do lirismo nacionalista da 'Canção do Exílio'." },
+                        { text: "Geração Parnasianista", correct: false, rationale: "O Parnasianismo é um movimento literário posterior ao Romantismo, com características estéticas diferentes." }
+                    ],
+                    hint: "Lembre-se dos sentimentos de exaltação da terra natal expressos nesta famosa poesia."
+                }
+            ],
+            "2ª Geração (Ultrarromântica/Mal do Século)": [
+                {
+                    question: "Qual das seguintes características é predominante na 2ª geração do Romantismo Brasileiro, também conhecida como Ultrarromantismo ou 'Mal do Século'?",
+                    answers: [
+                        { text: "Pessimismo, morbidez, fuga da realidade e idealização da morte.", correct: true, rationale: "A 2ª geração romântica, ou Ultrarromantismo, é marcada pela profunda melancolia, pela atração pela morte e pelo escapismo." },
+                        { text: "Exaltação do índio e da natureza nacional.", correct: false, rationale: "Essas são características da 1ª geração romântica, não da 2ª." },
+                        { text: "Engajamento social e abolicionismo.", correct: false, rationale: "O engajamento social e o abolicionismo são temas da 3ª geração romântica, conhecida como Condoreira." },
+                        { text: "Objetividade e busca pela perfeição formal.", correct: false, rationale: "Objetividade e perfeição formal são características do Parnasianismo, um movimento que sucede o Romantismo." }
+                    ],
+                    hint: "Esta geração é conhecida por seus tons sombrios e por uma certa angústia existencial."
+                },
+                {
+                    question: "Qual poeta é um dos maiores expoentes da 2ª geração romântica brasileira, conhecido por sua poesia 'Byroniana' e temas noturnos?",
+                    answers: [
+                        { text: "Álvares de Azevedo", correct: true, rationale: "Álvares de Azevedo é o principal nome do Ultrarromantismo brasileiro, com obras que refletem o tédio, a morte e o amor frustrado." },
+                        { text: "José de Alencar", correct: false, rationale: "José de Alencar pertence à 1ª geração e é mais conhecido pela prosa indianista." },
+                        { text: "Castro Alves", correct: false, rationale: "Castro Alves é o poeta da 3ª geração, com foco em temas sociais." },
+                        { text: "Manuel Antônio de Almeida", correct: false, rationale: "Manuel Antônio de Almeida é um romancista da transição, conhecido por 'Memórias de um Sargento de Milícias', que se afasta do idealismo romântico." }
+                    ],
+                    hint: "Ele escreveu sobre Lira dos Vinte Anos e Noite na Taverna."
+                },
+                {
+                    question: "Qual sentimento é frequentemente explorado na 2ª geração romântica, levando a uma atração por cemitérios e visões sombrias?",
+                    answers: [
+                        { text: "Tédio e melancolia.", correct: true, rationale: "O tédio e a melancolia profunda levavam os ultrarromânticos a uma atração por ambientes sombrios e pela contemplação da morte." },
+                        { text: "Patriotismo.", correct: false, rationale: "O patriotismo é um tema da 1ª geração." },
+                        { text: "Otimismo e esperança.", correct: false, rationale: "A 2ª geração é caracterizada justamente pela ausência de otimismo, pautada no pessimismo." },
+                        { text: "Engajamento político.", correct: false, rationale: "O engajamento político é mais associado à 3ª geração romântica." }
+                    ],
+                    hint: "Pense no estado de espírito que levou à idealização da morte e da fuga da realidade."
+                },
+                {
+                    question: "A figura da mulher na 2ª geração romântica brasileira é frequentemente idealizada de que forma?",
+                    answers: [
+                        { text: "Inatingível, etérea e associada à morte.", correct: true, rationale: "Na 2ª geração, a mulher é frequentemente idealizada de forma platônica, como um ser inatingível, angelical ou até mesmo associada à morte." },
+                        { text: "Mulher forte e ativa na sociedade.", correct: false, rationale: "Essa representação não é comum na 2ª geração romântica, que foca mais na idealização do amor platônico e inatingível." },
+                        { text: "Mulher selvagem e indígena.", correct: false, rationale: "A mulher indígena é um tema da 1ª geração romântica, não da 2ª." },
+                        { text: "Mulher real e cotidiana.", correct: false, rationale: "A representação da mulher real e cotidiana é mais característica do Realismo/Naturalismo, movimento posterior ao Romantismo." }
+                    ],
+                    hint: "Considere a idealização extrema e a melancolia que permeiam as relações amorosas desta época."
+                }
+            ],
+            "3ª Geração (Condoreira/Social)": [
+                {
+                    question: "Qual é o apelido da 3ª geração do Romantismo Brasileiro, que reflete seu caráter social e político?",
+                    answers: [
+                        { text: "Condoreira.", correct: true, rationale: "A 3ª geração é conhecida como Condoreira, em referência ao condor, ave que voa alto e simboliza a liberdade e a visão ampla dos problemas sociais." },
+                        { text: "Indianista.", correct: false, rationale: "Indianista é o apelido da 1ª geração." },
+                        { text: "Ultrarromântica.", correct: false, rationale: "Ultrarromântica é o apelido da 2ª geração." },
+                        { text: "Nacionalista.", correct: false, rationale: "Nacionalista também é um termo associado à 1ª geração." }
+                    ],
+                    hint: "Pense em uma ave majestosa que simboliza a liberdade e a visão abrangente."
+                },
+                {
+                    question: "Quem é o principal representante da 3ª geração romântica brasileira, famoso por sua poesia abolicionista?",
+                    answers: [
+                        { text: "Castro Alves", correct: true, rationale: "Castro Alves é o grande poeta da 3ª geração, conhecido como 'Poeta dos Escravos' por sua forte atuação na causa abolicionista." },
+                        { text: "José de Alencar", correct: false, rationale: "José de Alencar é da 1ª geração e sua obra é principalmente prosa." },
+                        { text: "Álvares de Azevedo", correct: false, rationale: "Álvares de Azevedo é da 2ª geração, com foco em temas mais intimistas e melancólicos." },
+                        { text: "Machado de Assis", correct: false, rationale: "Machado de Assis é um dos maiores nomes da literatura brasileira, mas pertence ao Realismo, um movimento posterior ao Romantismo." }
+                    ],
+                    hint: "Ele é o autor de 'Navio Negreiro' e um defensor ardoroso da liberdade."
+                },
+                {
+                    question: "Qual tema social foi amplamente abordado pelos poetas da 3ª geração romântica brasileira?",
+                    answers: [
+                        { text: "Abolicionismo e Republicanismo.", correct: true, rationale: "A 3ª geração romântica, ou Condoreira, dedicou-se intensamente à denúncia da escravidão e à defesa dos ideais republicanos." },
+                        { text: "A idealização do amor platônico.", correct: false, rationale: "A idealização do amor platônico é mais comum na 2ª geração romântica." },
+                        { text: "A vida no campo e as tradições rurais.", correct: false, rationale: "Embora presentes no Romantismo, a vida no campo não é o tema social predominante da 3ª geração." },
+                        { text: "Os dilemas individuais do homem urbano.", correct: false, rationale: "Os dilemas individuais são mais explorados em outras fases do Romantismo ou em movimentos posteriores como o Realismo." }
+                    ],
+                    hint: "Pense nos grandes movimentos sociais da época e nas causas defendidas pelos poetas."
+                },
+                {
+                    question: "A linguagem utilizada na 3ª geração romântica brasileira é caracterizada por ser:",
+                    answers: [
+                        { text: "Oratória, grandiloquente e com tom de denúncia.", correct: true, rationale: "A linguagem da 3ª geração é marcada pela eloquência e pelo tom combativo, utilizada para denunciar as injustiças sociais." },
+                        { text: "Simples e coloquial.", correct: false, rationale: "Uma linguagem simples e coloquial não seria adequada para o tom de denúncia e a grandiosidade dos temas sociais abordados." },
+                        { text: "Intimista e melancólica.", correct: false, rationale: "A linguagem intimista e melancólica é mais típica da 2ª geração (Ultrarromantismo)." },
+                        { text: "Objetiva e descritiva.", correct: false, rationale: "Uma linguagem objetiva e descritiva é mais característica do Parnasianismo e Realismo, não do Romantismo Condoreiro." }
+                    ],
+                    hint: "Considere a finalidade da poesia desta geração: impactar e conscientizar."
+                }
+            ]
+        };
+
+        // Elementos do DOM
+        const generationSection = document.getElementById('generation-section');
+        const generationTitle = document.getElementById('generation-title');
+        const questionSection = document.getElementById('question-section');
+        const questionText = document.getElementById('question-text');
+        const answerButtonsContainer = document.getElementById('answer-buttons');
+        const feedbackContainer = document.getElementById('feedback-container');
+        const feedbackText = document.getElementById('feedback-text');
+        const rationaleText = document.getElementById('rationale-text');
+        const nextButton = document.getElementById('next-button');
+        const resultSection = document.getElementById('result-section');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const restartButton = document.getElementById('restart-button');
+        const hintText = document.getElementById('hint-text');
+        const messageModal = document.getElementById('messageModal');
+        const modalMessage = document.getElementById('modalMessage');
+
+        // Variáveis de estado do quiz
+        let currentGenerationIndex = 0; // Índice da geração atual
+        let currentQuestionIndex = 0; // Índice da pergunta atual dentro da geração
+        let score = 0; // Pontuação do jogador
+        let currentGenerationQuestions = []; // Perguntas da geração atual
+        const generationNames = Object.keys(questions); // Nomes das gerações
+
+        /**
+         * Exibe uma mensagem em um modal personalizado.
+         * @param {string} message - A mensagem a ser exibida.
+         */
+        function showModal(message) {
+            modalMessage.textContent = message;
+            messageModal.style.display = 'flex'; // Exibe o modal
+        }
+
+        /**
+         * Fecha o modal de mensagem.
+         */
+        function closeModal() {
+            messageModal.style.display = 'none'; // Esconde o modal
+        }
+
+        /**
+         * Inicia o quiz, configurando a primeira geração de perguntas.
+         */
+        function startQuiz() {
+            currentGenerationIndex = 0;
+            score = 0;
+            // Oculta a seção de resultado e mostra a seção de pergunta/geração
+            resultSection.classList.add('hidden');
+            generationSection.classList.remove('hidden');
+            questionSection.classList.add('hidden'); // Esconde a seção de perguntas inicialmente
+
+            loadGeneration(); // Carrega a primeira geração
+        }
+
+        /**
+         * Carrega as perguntas para a geração atual.
+         */
+        function loadGeneration() {
+            const currentGenName = generationNames[currentGenerationIndex];
+            currentGenerationQuestions = questions[currentGenName];
+            currentQuestionIndex = 0; // Reinicia o índice da pergunta para a nova geração
+
+            generationTitle.textContent = currentGenName; // Atualiza o título da geração
+            generationSection.classList.remove('hidden'); // Mostra a seção da geração
+            questionSection.classList.add('hidden'); // Garante que a seção de pergunta esteja oculta antes de carregar a próxima
+
+            // Adiciona um pequeno atraso antes de mostrar a primeira pergunta da nova geração
+            setTimeout(() => {
+                generationSection.classList.add('hidden');
+                questionSection.classList.remove('hidden');
+                showQuestion();
+            }, 1500); // Exibe o título da geração por 1.5 segundos
+        }
+
+        /**
+         * Função para embaralhar um array (Fisher-Yates shuffle).
+         * @param {Array} array - O array a ser embaralhado.
+         * @returns {Array} O array embaralhado.
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Troca elementos
+            }
+            return array;
+        }
+
+        /**
+         * Exibe a pergunta atual e suas opções de resposta.
+         */
+        function showQuestion() {
+            resetState(); // Limpa o estado da pergunta anterior
+
+            const currentQuestion = currentGenerationQuestions[currentQuestionIndex];
+            questionText.textContent = currentQuestion.question; // Define o texto da pergunta
+            hintText.textContent = `Dica: ${currentQuestion.hint}`; // Define o texto da dica
+
+            // Embaralha as respostas antes de exibi-las
+            const shuffledAnswers = shuffleArray([...currentQuestion.answers]);
+
+            // Cria e adiciona botões para cada opção de resposta
+            shuffledAnswers.forEach(answer => {
+                const button = document.createElement('button');
+                button.textContent = answer.text;
+                button.classList.add('answer-button');
+                if (answer.correct) {
+                    button.dataset.correct = true; // Marca a resposta correta
+                }
+                button.addEventListener('click', selectAnswer); // Adiciona listener de clique
+                answerButtonsContainer.appendChild(button); // Adiciona o botão ao contêiner
+            });
+        }
+
+        /**
+         * Reseta o estado da UI para uma nova pergunta.
+         */
+        function resetState() {
+            nextButton.classList.add('hidden'); // Esconde o botão "Próxima Pergunta"
+            feedbackContainer.classList.add('hidden'); // Esconde o feedback
+            feedbackText.textContent = ''; // Limpa o texto de feedback
+            rationaleText.textContent = ''; // Limpa o texto da justificativa
+            while (answerButtonsContainer.firstChild) {
+                // Remove todos os botões de resposta anteriores
+                answerButtonsContainer.removeChild(answerButtonsContainer.firstChild);
+            }
+        }
+
+        /**
+         * Lida com a seleção de uma resposta pelo usuário.
+         * @param {Event} e - O evento de clique.
+         */
+        function selectAnswer(e) {
+            const selectedButton = e.target;
+            const isCorrect = selectedButton.dataset.correct === 'true';
+
+            // Adiciona classes de estilo para feedback visual
+            if (isCorrect) {
+                selectedButton.classList.add('correct');
+                score++; // Incrementa a pontuação se a resposta estiver correta
+                feedbackText.textContent = 'Correto!';
+                feedbackText.classList.remove('text-red-600');
+                feedbackText.classList.add('text-green-600');
+            } else {
+                selectedButton.classList.add('incorrect');
+                feedbackText.textContent = 'Incorreto!';
+                feedbackText.classList.remove('text-green-600');
+                feedbackText.classList.add('text-red-600');
+            }
+
+            // Exibe a justificativa da resposta
+            const currentQuestion = currentGenerationQuestions[currentQuestionIndex];
+            const selectedAnswer = currentQuestion.answers.find(ans => ans.text === selectedButton.textContent);
+            if (selectedAnswer && selectedAnswer.rationale) {
+                rationaleText.textContent = selectedAnswer.rationale;
+            }
+
+            // Desabilita todos os botões após a seleção
+            Array.from(answerButtonsContainer.children).forEach(button => {
+                if (button.dataset.correct === 'true') {
+                    button.classList.add('correct'); // Destaca a resposta correta mesmo se a errada for selecionada
+                }
+                button.disabled = true;
+            });
+
+            feedbackContainer.classList.remove('hidden'); // Mostra o contêiner de feedback
+            nextButton.classList.remove('hidden'); // Mostra o botão "Próxima Pergunta"
+        }
+
+        /**
+         * Lida com o clique no botão "Próxima Pergunta".
+         */
+        function handleNextButton() {
+            currentQuestionIndex++; // Avança para a próxima pergunta
+
+            // Verifica se há mais perguntas na geração atual
+            if (currentQuestionIndex < currentGenerationQuestions.length) {
+                showQuestion();
+            } else {
+                // Se não há mais perguntas na geração atual, avança para a próxima geração
+                currentGenerationIndex++;
+
+                // Verifica se há mais gerações
+                if (currentGenerationIndex < generationNames.length) {
+                    loadGeneration(); // Carrega a próxima geração
+                } else {
+                    showResult(); // Se todas as gerações foram concluídas, mostra o resultado final
+                }
+            }
+        }
+
+        /**
+         * Exibe a pontuação final do quiz.
+         */
+        function showResult() {
+            questionSection.classList.add('hidden'); // Esconde a seção de perguntas
+            resultSection.classList.remove('hidden'); // Mostra a seção de resultados
+            finalScoreDisplay.textContent = `Você acertou ${score} de ${Object.values(questions).flat().length} perguntas!`; // Exibe a pontuação
+        }
+
+        // Adiciona listeners de evento aos botões
+        nextButton.addEventListener('click', handleNextButton);
+        restartButton.addEventListener('click', startQuiz);
+
+        // Inicia o quiz quando a página é carregada
+        document.addEventListener('DOMContentLoaded', startQuiz);
+    </script>
+</body>
+</html>
